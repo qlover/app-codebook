@@ -1,0 +1,12 @@
+{
+  "name": "app-codebook",
+  "displayName": "app-codebook",
+  "expo": {
+    "name": "app-codebook",
+    "slug": "app-codebook",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
