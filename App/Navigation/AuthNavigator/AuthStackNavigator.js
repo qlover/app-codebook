@@ -6,9 +6,9 @@ const Stack = createStackNavigator();
 
 export default function AuthStackNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="register" component={() => <Text> 注册</Text>} />
+    <Stack.Navigator headerMode="none">
       <Stack.Screen name="login" component={() => <Text>登录</Text>} />
+      <Stack.Screen name="register" component={() => <Text> 注册</Text>} />
     </Stack.Navigator>
   );
 }

@@ -6,7 +6,7 @@ const Stack = createStackNavigator();
 
 export default function LaunchStackNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator headerMode="none">
       <Stack.Screen
         name="boot"
         component={() => (
