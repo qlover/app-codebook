@@ -1,11 +1,14 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
+import { Text } from "react-native";
+import Home from "../../Container/Main/Home";
 
 const Stack = createStackNavigator();
-export default function MainStackNavigator() {
+
+export default function LaunchStackNavigator() {
   return (
-    <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={() => <Text>首页</Text>} />
+    <Stack.Navigator headerMode="none">
+      <Stack.Screen name="Home" component={Home} />
     </Stack.Navigator>
   );
 }
