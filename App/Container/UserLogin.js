@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
+
 import {
   Text,
   View,
@@ -7,8 +9,9 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { login } from "../Service/UserLoginService";
+import { createAction, invalidAction } from "../Redux/TokenRedux";
 
-export default class UserSignup extends Component {
+class UserLogin extends Component {
   constructor(props) {
     super(props);
 
@@ -35,8 +38,8 @@ export default class UserSignup extends Component {
             }}
             value={this.state.username}
             placeholder="请输入用户名"
-            onChangeText={(text) => {
-              this.setState({ username: text });
+            onChangeText={(username) => {
+              this.setState({ username });
             }}
           />
           <TextInput
@@ -51,8 +54,8 @@ export default class UserSignup extends Component {
             value={this.state.password}
             textContentType="newPassword"
             placeholder="请输入密码"
-            onChangeText={(text) => {
-              this.setState({ password: text });
+            onChangeText={(password) => {
+              this.setState({ password });
             }}
           />
           <TouchableWithoutFeedback>
@@ -66,8 +69,28 @@ export default class UserSignup extends Component {
   }
 
   onLogin() {
-    login(this.state.username, this.state.password)
-      .then((res) => console.log("登录成功", res))
-      .catch((error) => console.log(error));
+    const { username, password } = this.state;
+    const { createToken } = this.props;
+    login(username, password)
+      .then((res) => {
+        console.log("登录成功", res);
+        createToken(res);
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    token: state.TokenReducer,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  invaliToken: () => dispatch(invalidAction()),
+  createToken: (payload) => dispatch(createAction(payload)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserLogin);
