@@ -54,8 +54,14 @@ export const TokenReducer = (
     case TOKEN_CREATE:
       return Object.assign({}, state, action.payload);
     case TOKEN_INVALID:
-      return {...initialState};
+      return { ...initialState };
     default:
       return state;
   }
 };
+
+/** 提供的额外方法 */
+// 序列化 jwtToken
+export const decodeJwtToken = (token: string): jwtToken => JSON.parse(token);
+export const encodeJwtToken = (payload: jwtToken): string =>
+  JSON.stringify(payload);

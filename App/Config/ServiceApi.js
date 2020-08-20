@@ -3,6 +3,9 @@ export type RequestIon = {
   api: string,
 };
 
+// 本地存储 token key
+export const LOCAL_JWTTOKEN_KEY = "local:jwt:token";
+
 // 用户登录
 export const API_USER_LOGIN: RequestIon = { method: "POST", api: "/login" };
 export const API_USER_REGISTER: RequestIon = { method: "POST", api: "/signup" };

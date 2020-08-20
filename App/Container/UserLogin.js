@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { login } from "../Service/UserLoginService";
 import { createAction, invalidAction } from "../Redux/TokenRedux";
+import getMsgByKey from "../Config/error";
+import TokenService from "../Service/TokenService";
 
 class UserLogin extends Component {
   constructor(props) {
@@ -70,27 +72,31 @@ class UserLogin extends Component {
 
   onLogin() {
     const { username, password } = this.state;
-    const { createToken } = this.props;
+    const { navigation } = this.props;
+
     login(username, password)
       .then((res) => {
-        console.log("登录成功", res);
-        createToken(res);
+        alert("登录成功");
+
+        // ！！！同步 进行存储token 到本地
+        TokenService.setToken(res).then((res) => {
+          if (res) {
+            navigation.navigate("Main");
+          }
+        });
       })
       .catch((error) => {
-        console.log("error", error);
+        if (error.error) {
+          alert(getMsgByKey(error.error));
+        }
       });
   }
 }
 
 const mapStateToProps = (state) => {
-  return {
-    token: state.TokenReducer,
-  };
+  return {};
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  invaliToken: () => dispatch(invalidAction()),
-  createToken: (payload) => dispatch(createAction(payload)),
-});
+const mapDispatchToProps = (dispatch) => ({});
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserLogin);
