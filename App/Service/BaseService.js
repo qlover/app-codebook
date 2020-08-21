@@ -5,7 +5,6 @@ import TokenService from "./TokenService";
 export default class BaseService {
   static request(ion: RequestIon, params?: object) {
     const url = API + ion.api;
-    // const jwtToken = TokenService.getLocalToken();
     const req = new Request(url, {
       method: ion.method,
       headers: {

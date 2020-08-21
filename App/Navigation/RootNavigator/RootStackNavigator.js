@@ -8,10 +8,10 @@ const Stack = createStackNavigator();
 
 export default function RootStackNavigator() {
   return (
-    <Stack.Navigator headerMode="none">
-      <Stack.Screen name="Main" component={MainStackNavigator} />
-      <Stack.Screen name="Auth" component={AuthStackNavigator} />
+    <Stack.Navigator headerMode="none" initialRouteName="Launch">
       <Stack.Screen name="Launch" component={LaunchStackNavigator} />
+      <Stack.Screen name="Auth" component={AuthStackNavigator} />
+      <Stack.Screen name="Main" component={MainStackNavigator} />
     </Stack.Navigator>
   );
 }

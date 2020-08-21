@@ -77,13 +77,8 @@ class UserLogin extends Component {
     login(username, password)
       .then((res) => {
         alert("登录成功");
-
-        // ！！！同步 进行存储token 到本地
-        TokenService.setToken(res).then((res) => {
-          if (res) {
-            navigation.navigate("Main");
-          }
-        });
+        const state = TokenService.setToken(res);
+        navigation.navigate("Main");
       })
       .catch((error) => {
         if (error.error) {

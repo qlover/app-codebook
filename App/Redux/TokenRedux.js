@@ -19,7 +19,7 @@ export type Action = {
   payload: jwtToken,
 };
 
-export const initialState: jwtToken = {
+export const initialToken: jwtToken = {
   key: "",
   repeat: false,
   token: "",
@@ -47,21 +47,15 @@ export const getAction = (payload: jwtToken) => ({ type: TOKEN_GET, payload });
  * @param {Action} action 新的类型和值
  */
 export const TokenReducer = (
-  state: jwtToken = initialState,
+  state: jwtToken = initialToken,
   action: Action
 ) => {
   switch (action.type) {
     case TOKEN_CREATE:
       return Object.assign({}, state, action.payload);
     case TOKEN_INVALID:
-      return { ...initialState };
+      return { ...initialToken };
     default:
       return state;
   }
 };
-
-/** 提供的额外方法 */
-// 序列化 jwtToken
-export const decodeJwtToken = (token: string): jwtToken => JSON.parse(token);
-export const encodeJwtToken = (payload: jwtToken): string =>
-  JSON.stringify(payload);

@@ -19,14 +19,10 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export default () => {
-  // 未持久化的状态树
-  // const store = createStore(rootReducer, data, middleware)
+// 状态存储树
+const store = createStore(persistedReducer, middleware);
 
-  // 状态存储树
-  const store = createStore(persistedReducer, middleware);
+// 持久化
+export const persistor = persistStore(store);
 
-  // 持久化
-  const persistor = persistStore(store);
-  return { store, persistor };
-};
+export default store;

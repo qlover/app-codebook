@@ -1,40 +1,37 @@
-import AsyncStorage from "@react-native-community/async-storage";
-import { LOCAL_JWTTOKEN_KEY } from "../Config/ServiceApi";
 import {
   jwtToken,
-  TokenReducer,
   createAction,
-  initialState,
-  encodeJwtToken,
-  decodeJwtToken,
+  initialToken,
+  invalidAction,
 } from "../Redux/TokenRedux";
+import store from "../Redux/createStrore";
 
 export default class TokenService {
   /**
    * 获取登录的token
    *
-   * PS:如果需要同步获取 token,则调用该方法的方法需要使用 async 和 await 获取
    */
-  static getToken = () =>
-    AsyncStorage.getItem(LOCAL_JWTTOKEN_KEY)
-      .then((token) => (token ? decodeJwtToken(token) : initialState))
-      .catch(() => initialState);
+  static getToken = () => {
+    const reducers = store.getState();
+    if (reducers && reducers.TokenReducer) {
+      return reducers.TokenReducer;
+    }
+    return initialToken;
+  };
 
   /**
    * 设置 token
    *
-   * PS:如果需要同步设置 token,则调用该方法的方法需要使用 async 和 await
-   *
    * @param {jwtToken} state
    */
-  static setToken = (state: jwtToken): Promise<boolean> =>
-    AsyncStorage.setItem(LOCAL_JWTTOKEN_KEY, encodeJwtToken(state))
-      .then(() => true)
-      .catch(() => false);
+  static setToken = (state: jwtToken) => store.dispatch(createAction(state));
 
-  /**
-   * 同步得到本地token
-   */
-  static getLocalToken = async (): Promise<jwtToken> =>
-    await TokenService.getToken();
+  static invaldToken = () => store.dispatch(invalidAction);
+
+  static check(payload: jwtToken): boolean {
+    if (payload.void || !payload.token) {
+      return false;
+    }
+    return true;
+  }
 }

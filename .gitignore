@@ -65,3 +65,4 @@ web-build/
 # general
 *.zip
 *.rar
+App/Config/env.js
