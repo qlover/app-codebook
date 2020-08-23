@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Text, View } from "react-native";
-import TokenService from '../Service/TokenService'
+import TokenService from "../Service/TokenService";
 class Boot extends Component {
   constructor(props) {
     super(props);
@@ -10,13 +10,18 @@ class Boot extends Component {
     const { navigation } = this.props;
 
     // 查检登录状态
-    const jwtToken = TokenService.getToken()
+    const jwtToken = TokenService.getToken();
     if (!TokenService.check(jwtToken)) {
-      navigation.replace("Auth");
-      return 
+      setTimeout(() => {
+        navigation.replace("Auth");
+      }, 4000);
+      return;
     }
 
     navigation.replace("Main");
+    // setTimeout(() => {
+    //   navigation.replace("Main");
+    // }, 4000);
   }
 
   render() {

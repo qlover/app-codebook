@@ -55,6 +55,7 @@ export default class UserSignup extends Component {
               this.setState({ password: text });
             }}
           />
+          <Text onPress={() => this.onToLogin()}>去登录</Text>
           <TouchableWithoutFeedback>
             <View style={{ marginVertical: 10 }}>
               <Button title="注 册" onPress={() => this.onRegister()} />
@@ -63,6 +64,11 @@ export default class UserSignup extends Component {
         </View>
       </View>
     );
+  }
+
+  onToLogin() {
+    const { navigation } = this.props;
+    navigation.replace("login");
   }
 
   onRegister() {

@@ -54,7 +54,7 @@ export const TokenReducer = (
     case TOKEN_CREATE:
       return Object.assign({}, state, action.payload);
     case TOKEN_INVALID:
-      return { ...initialToken };
+      return initialToken;
     default:
       return state;
   }

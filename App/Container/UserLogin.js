@@ -60,6 +60,7 @@ class UserLogin extends Component {
               this.setState({ password });
             }}
           />
+          <Text onPress={() => this.onToRegister()}>去注册</Text>
           <TouchableWithoutFeedback>
             <View style={{ marginVertical: 10 }}>
               <Button title="登录" onPress={() => this.onLogin()} />
@@ -70,19 +71,27 @@ class UserLogin extends Component {
     );
   }
 
+  onToRegister() {
+    const { navigation } = this.props;
+    navigation.replace("register");
+  }
+
   onLogin() {
     const { username, password } = this.state;
     const { navigation } = this.props;
 
     login(username, password)
       .then((res) => {
-        alert("登录成功");
+        console.log("登录成功");
         const state = TokenService.setToken(res);
-        navigation.navigate("Main");
+        navigation.replace("Main");
       })
       .catch((error) => {
+        console.log(error);
         if (error.error) {
-          alert(getMsgByKey(error.error));
+          console.log(getMsgByKey(error.error));
+        } else {
+          console.log("登录失败" + error);
         }
       });
   }

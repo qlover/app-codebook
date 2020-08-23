@@ -26,7 +26,7 @@ export default class TokenService {
    */
   static setToken = (state: jwtToken) => store.dispatch(createAction(state));
 
-  static invaldToken = () => store.dispatch(invalidAction);
+  static invaldToken = () => store.dispatch(invalidAction());
 
   static check(payload: jwtToken): boolean {
     if (payload.void || !payload.token) {
