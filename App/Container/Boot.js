@@ -1,7 +1,8 @@
-import React, { Component } from "react";
+import React from "react";
 import { Text, View } from "react-native";
 import TokenService from "../Service/TokenService";
-class Boot extends Component {
+import Container from "./Container";
+class Boot extends Container {
   constructor(props) {
     super(props);
   }

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
@@ -10,20 +10,15 @@ import {
   Button,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/AntDesign";
-import DictService from "../../Service/DictService";
-import TokenService from "../../Service/TokenService";
 import { Provider, Portal, FAB } from "react-native-paper";
 import { throttle } from "lodash";
-import { DictEntity, defaultDiecEntity } from "../../Interface/Entity";
-import { Sort, Paginate } from "../../Interface/RequestParam";
 
-type Props = {};
-
-type State = {
-  dictList: Array<DictEntity>,
-  sort: Sort,
-  page: Paginate,
-};
+import DictService, {
+  DictEntity,
+  _DictEntity,
+} from "../../Service/DictService";
+import TokenService from "../../Service/TokenService";
+import Container from "../Container";
 
 let page = {
   page: 1,
@@ -32,7 +27,7 @@ let page = {
 
 let loadOver = false;
 
-export default class Home extends Component<Props, State, {}> {
+export default class Home extends Container {
   constructor(props) {
     super(props);
     this.service = new DictService();
@@ -58,7 +53,7 @@ export default class Home extends Component<Props, State, {}> {
     return (page.page = rest ? 1 : page.page + Math.max(0, inc));
   }
 
-  onDictClick(params: DictEntity = defaultDiecEntity) {
+  onDictClick(params: DictEntity = _DictEntity) {
     const { navigation } = this.props;
     navigation.navigate({
       name: "DcitInfo",

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import {
   Text,
   View,
@@ -6,29 +6,17 @@ import {
   Button,
   StyleSheet,
   RefreshControl,
-} from "react-native";
-import TokenService from "../../Service/TokenService";
-import {
   FlatList,
-  ScrollView,
-  TouchableHighlight,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
-import DictService from "../../Service/DictService";
-import { DictEntity } from "../../Interface/Entity";
-import { Sort, Paginate } from "../../Interface/RequestParam";
-import { Portal, FAB, Provider } from "react-native-paper";
+} from "react-native";
 import Ionicons from "react-native-vector-icons/AntDesign";
+import { Portal, FAB, Provider } from "react-native-paper";
 
-type Props = {};
+import { Sort, Paginate } from "../../Contracts/Types/Service";
+import DictService, { DictEntity } from "../../Service/DictService";
+import TokenService from "../../Service/TokenService";
+import Container from "../Container";
 
-type State = {
-  dictList: Array<DictEntity>,
-  sort: Sort,
-  page: Paginate,
-};
-
-class Home extends Component<Props, State, {}> {
+class Home extends Container {
   constructor(props) {
     super(props);
 

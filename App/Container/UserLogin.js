@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { connect } from "react-redux";
 
 import {
@@ -12,8 +12,9 @@ import { login } from "../Service/UserLoginService";
 import { createAction, invalidAction } from "../Redux/TokenRedux";
 import getMsgByKey from "../Config/error";
 import TokenService from "../Service/TokenService";
+import Container from "./Container";
 
-class UserLogin extends Component {
+class UserLogin extends Container {
   constructor(props) {
     super(props);
 

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import {
   Text,
   View,
@@ -7,8 +7,9 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { signup } from "../Service/UserLoginService";
+import Container from "./Container";
 
-export default class UserSignup extends Component {
+export default class UserSignup extends Container {
   constructor(props) {
     super(props);
 

@@ -1,10 +1,4 @@
-export type RequestIon = {
-  method: "GET" | "POST" | "PUT" | "DELETE",
-  api: string,
-};
-
-// 本地存储 token key
-export const LOCAL_JWTTOKEN_KEY = "local:jwt:token";
+import { RequestIon } from "../Contracts/Types/Service";
 
 // 用户登录
 export const API_USER_LOGIN: RequestIon = { method: "POST", api: "/login" };

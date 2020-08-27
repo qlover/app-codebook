@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,18 +7,12 @@ import {
   TouchableWithoutFeedback,
   StyleSheet,
 } from "react-native";
-import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { DictEntity, defaultDiecEntity } from "../../Interface/Entity";
-import { TouchableNativeFeedback } from "react-native-gesture-handler";
-import DictService from "../../Service/DictService";
 import { Dict as DictPlaceholder } from "../../Config/Lang";
 import { keys, pick } from "lodash";
-export interface Props {}
+import DictService, { _DictEntity } from "../../Service/DictService";
+import Container from "../Container";
 
-export interface State {
-  dict: DictEntity | {};
-}
 /**
  * 是保存还是修改
  *
@@ -27,13 +21,13 @@ export interface State {
  */
 let isUpdate: Boolean;
 
-export class Dict extends Component<Props, State, {}> {
+export class Dict extends Container {
   constructor(props) {
     super(props);
     const { route } = this.props;
     // 用ID判断是修改还是增加
     isUpdate = route.params && route.params.id && route.params.id > 0;
-    const dict = isUpdate ? route.params : defaultDiecEntity;
+    const dict = isUpdate ? route.params : _DictEntity;
 
     this.state = { dict };
     this.service = new DictService();
@@ -55,21 +49,19 @@ export class Dict extends Component<Props, State, {}> {
   }
 
   renderDictInput() {
-    return keys(pick(this.state.dict, Object.keys(defaultDiecEntity))).map(
-      (_key) => (
-        <TextInput
-          placeholder={
-            DictPlaceholder[_key] ? DictPlaceholder[_key] : "请输入文本"
-          }
-          key={_key}
-          style={styles.input}
-          value={this.state.dict[_key]}
-          onChangeText={(text) => {
-            this.setState({ dict: { ...this.state.dict, [_key]: text } });
-          }}
-        />
-      )
-    );
+    return keys(pick(this.state.dict, Object.keys(_DictEntity))).map((_key) => (
+      <TextInput
+        placeholder={
+          DictPlaceholder[_key] ? DictPlaceholder[_key] : "请输入文本"
+        }
+        key={_key}
+        style={styles.input}
+        value={this.state.dict[_key]}
+        onChangeText={(text) => {
+          this.setState({ dict: { ...this.state.dict, [_key]: text } });
+        }}
+      />
+    ));
   }
 
   render() {
