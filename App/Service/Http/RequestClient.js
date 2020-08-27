@@ -4,6 +4,7 @@ import { RequestIon } from "../../Contracts/Types/Service";
 import { isObject, omitBy, isEmpty } from "lodash";
 import { ByKey } from "../../Contracts/RetJson";
 import Container from "../../Container/Container";
+import Toast from "../Sys/Toast";
 
 // null 和 undefined 一次性判断用 ==
 export const filterParams = (param) => "" === param || undefined == param;
@@ -20,7 +21,7 @@ export default class RequestClient {
     return this;
   }
 
-  parse(ion: RequestIon, params?: object) {
+  parse(ion: RequestIon, params?: object): Promise<ByKey> {
     let url = API + ion.api;
     let init = {
       method: ion.method,
@@ -57,6 +58,7 @@ export default class RequestClient {
       // 认证错误
       if (40102 == res.code) {
         console.log(Container.screen.navigation());
+        new Toast().show({ message: res.error });
         Container.screen.navigation().replace("Auth");
         return Promise.reject(res.error);
       } else if (res.error) {
