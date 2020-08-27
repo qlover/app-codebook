@@ -12,8 +12,8 @@ import Ionicons from "react-native-vector-icons/AntDesign";
 import { Portal, FAB, Provider } from "react-native-paper";
 
 import { Sort, Paginate } from "../../Contracts/Types/Service";
-import DictService, { DictEntity } from "../../Service/DictService";
-import TokenService from "../../Service/TokenService";
+import DictService, { DictEntity } from "../../Service/Http/DictService";
+import TokenService from "../../Service/Http/TokenService";
 import Container from "../Container";
 
 class Home extends Container {

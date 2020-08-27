@@ -1,4 +1,4 @@
-import { API_USER_LOGIN, API_USER_REGISTER } from "../Config/api"
+import { API_USER_LOGIN, API_USER_REGISTER } from "../../Config/api"
 import RequestClient from "./RequestClient";
 
 export const login = (username: string, password: string) => {

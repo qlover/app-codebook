@@ -16,8 +16,8 @@ import { throttle } from "lodash";
 import DictService, {
   DictEntity,
   _DictEntity,
-} from "../../Service/DictService";
-import TokenService from "../../Service/TokenService";
+} from "../../Service/Http/DictService";
+import TokenService from "../../Service/Http/TokenService";
 import Container from "../Container";
 
 let page = {

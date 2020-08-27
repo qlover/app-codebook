@@ -6,7 +6,7 @@ import {
   Button,
   TouchableWithoutFeedback,
 } from "react-native";
-import { signup } from "../Service/UserLoginService";
+import { signup } from "../Service/Http/UserLoginService";
 import Container from "./Container";
 
 export default class UserSignup extends Container {

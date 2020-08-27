@@ -10,7 +10,7 @@ import {
 import { connect } from "react-redux";
 import { Dict as DictPlaceholder } from "../../Config/Lang";
 import { keys, pick } from "lodash";
-import DictService, { _DictEntity } from "../../Service/DictService";
+import DictService, { _DictEntity } from "../../Service/Http/DictService";
 import Container from "../Container";
 
 /**

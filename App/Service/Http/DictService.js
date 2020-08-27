@@ -1,12 +1,12 @@
-import { Message } from "../Contracts/RetJson";
+import { Message } from "../../Contracts/RetJson";
 import {
   API_DICT_GET,
   API_DICTS_ADD,
   API_DICTS_UPDATE,
   API_DICTS_GET,
   API_DICTS_DELTE,
-} from "../Config/api";
-import { Paginate, Sort } from "../Contracts/Types/Service";
+} from "../../Config/api";
+import { Paginate, Sort } from "../../Contracts/Types/Service";
 import BaseService from "./BaseService";
 
 /** Interface and Types */

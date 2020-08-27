@@ -3,8 +3,8 @@ import {
   createAction,
   initialToken,
   invalidAction,
-} from "../Redux/TokenRedux";
-import store from "../Redux/createStrore";
+} from "../../Redux/TokenRedux";
+import store from "../../Redux/createStrore";
 
 export default class TokenService {
   /**
