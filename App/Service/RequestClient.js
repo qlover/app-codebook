@@ -14,11 +14,11 @@ export default class RequestClient {
       "Content-Type": "application/json;charset=UTF-8",
     };
     this.interceptors = {
-      request: []
-      respont: []
-    }
+      request: [],
+      respont: [],
+    };
   }
-  
+
   setHeader(key: string, value: string): this {
     this.headers[key] = value;
     return this;
