@@ -19,6 +19,7 @@ import DictService, {
 } from "../../Service/Http/DictService";
 import TokenService from "../../Service/Http/TokenService";
 import Container from "../Container";
+import Toast from "../../Service/Sys/Toast";
 
 let page = {
   page: 1,
@@ -33,14 +34,19 @@ export default class Home extends Container {
     this.service = new DictService();
     this.state = {
       isLoading: false,
+      isRefreshing: false,
       dictlist: [],
     };
 
-    this.onLoading = throttle(this.onLoading, 800);
+    this.onLoading = throttle(this._onLoading, 1500);
   }
 
   componentDidMount() {
-    this.onLoading(true);
+    this._onLoading(true);
+  }
+
+  changeStatus(isLoading = false, isRefreshing = false) {
+    this.changeState({ isLoading, isRefreshing });
   }
 
   /**
@@ -61,29 +67,36 @@ export default class Home extends Container {
     });
   }
 
-  onLoading(refreshing) {
-    if (refreshing) {
+  _onLoading(isRefreshing) {
+    if (isRefreshing) {
+      // 刷新
       loadOver = false;
+      this.setState({ isRefreshing });
+    } else {
+      // 加载
+      if (loadOver) {
+        return 0;
+      }
       this.setState({ isLoading: true });
     }
-    if (loadOver) {
-      return 0;
-    }
+    console.log("loading..");
 
-    this.incrementPage(refreshing);
+    this.incrementPage(isRefreshing);
 
+    const state = { isRefreshing: false, isLoading: false };
     this.service
       .getList(page, { sort: "id", sortBy: 1 })
       .then((res) => {
         const { data } = res.dicts;
         // 放置是否加载完毕
         loadOver = !data || data.length < page.limit;
-        this.setState({
-          dictlist: refreshing ? data : this.state.dictlist.concat(data),
-          isLoading: false,
-        });
+        const dictlist = isRefreshing ? data : this.state.dictlist.concat(data);
+        this.setState({ ...state, dictlist });
       })
-      .catch((err) => console.log("获取失败", err));
+      .catch((message) => {
+        this.setState(state);
+        // new Toast().show({ message });
+      });
   }
 
   onLogout() {
@@ -95,19 +108,43 @@ export default class Home extends Container {
   }
 
   renderPullLoading = () => {
-    return (
-      <View style={{ margin: 15 }}>
-        {loadOver ? (
+    if (loadOver) {
+      return (
+        <View style={{ margin: 15 }}>
           <Text style={{ fontSize: 12, color: "#888", textAlign: "center" }}>
-            "没有更多了"
+            没有更多了
           </Text>
-        ) : (
+        </View>
+      );
+    }
+    if (this.state.isLoading) {
+      return (
+        <View style={{ margin: 15 }}>
           <ActivityIndicator
             animating={this.state.animating}
             style={[styles.centering, { height: 20 }]}
             size="small"
           />
-        )}
+        </View>
+      );
+    }
+    return null;
+  };
+
+  renderListHeader = () => {
+    return (
+      <View>
+        <TouchableWithoutFeedback>
+          <View style={{ marginVertical: 10 }}>
+            <Button title="添加" onPress={() => this.onDictClick()} />
+          </View>
+        </TouchableWithoutFeedback>
+
+        <TouchableWithoutFeedback>
+          <View style={{ marginVertical: 10 }}>
+            <Button title="退出" onPress={() => this.onLogout()} />
+          </View>
+        </TouchableWithoutFeedback>
       </View>
     );
   };
@@ -141,19 +178,8 @@ export default class Home extends Container {
   render() {
     return (
       <Provider>
-        <TouchableWithoutFeedback>
-          <View style={{ marginVertical: 10 }}>
-            <Button title="添加" onPress={() => this.onDictClick()} />
-          </View>
-        </TouchableWithoutFeedback>
-
-        <TouchableWithoutFeedback>
-          <View style={{ marginVertical: 10 }}>
-            <Button title="退出" onPress={() => this.onLogout()} />
-          </View>
-        </TouchableWithoutFeedback>
-
         <FlatList
+          ListHeaderComponent={this.renderListHeader}
           data={this.state.dictlist}
           renderItem={this.renderDict}
           refreshControl={
@@ -161,15 +187,15 @@ export default class Home extends Container {
               colors={["red"]} //此颜色无效
               tintColor={"orange"}
               titleColor={"red"} //只有ios有效
-              refreshing={this.state.isLoading}
+              refreshing={this.state.isRefreshing}
               onRefresh={() => {
                 this.onLoading(true);
               }}
             />
           }
           ListFooterComponent={() => this.renderPullLoading()} //上拉加载更多视图
-          onEndReached={() => this.onLoading()}
-          onEndReachedThreshold={0.1} // 这个属性的意思是 当滑动到距离列表内容底部不足 0.1*列表内容高度时触发onEndReached函数 为啥要加这个属性 因为不加的话滑动一点点就会立即触发onReached函数，看不到菊花加载中
+          onEndReached={() => this.onLoading()} // TODO:待解决滑动频繁调用 loading
+          onEndReachedThreshold={0.5} // 这个属性的意思是 当滑动到距离列表内容底部不足 0.1*列表内容高度时触发onEndReached函数 为啥要加这个属性 因为不加的话滑动一点点就会立即触发onReached函数，看不到菊花加载中
         />
 
         <Portal>

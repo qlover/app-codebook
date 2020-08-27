@@ -11,6 +11,10 @@ export default class Container extends Component {
     Container.screen = this;
   }
 
+  changeState(state) {
+    this.setState(state);
+  }
+
   navigation() {
     return this.props.navigation;
   }
