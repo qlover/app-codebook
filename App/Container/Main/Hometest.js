@@ -68,24 +68,25 @@ export default class Home extends Container {
   }
 
   _onLoading(isRefreshing) {
-    console.log(this.state.isRefreshing, this.state.isLoading)
+    // console.log(this.state.isRefreshing, this.state.isLoading)
     if (isRefreshing) {
       // 刷新
       loadOver = false;
+      console.log("refreshing..", this.state.isRefreshing, this.state.isLoading);
       this.setState({ isRefreshing });
-      console.log("refreshing..");
     } else {
       // 加载
       if (loadOver) {
         return 0;
       }
+      console.log("loading..", this.state.isRefreshing, this.state.isLoading);
       this.setState({ isLoading: true });
-      console.log("loading..");
+      // console.log("loading..");
     }
 
+    const state = { isRefreshing: false, isLoading: false };
     this.incrementPage(isRefreshing);
 
-    const state = { isRefreshing: false, isLoading: false };
     this.service
       .getList(page, { sort: "id", sortBy: 1 })
       .then((res) => {
@@ -178,6 +179,7 @@ export default class Home extends Container {
   );
 
   render() {
+    console.log("render");
     return (
       <Provider>
         <FlatList
@@ -198,7 +200,7 @@ export default class Home extends Container {
           }
           ListFooterComponent={() => this.renderPullLoading()} //上拉加载更多视图
           onEndReached={() => this.onLoading()} // TODO:待解决滑动频繁调用 loading
-          onEndReachedThreshold={0.5} // 这个属性的意思是 当滑动到距离列表内容底部不足 0.1*列表内容高度时触发onEndReached函数 为啥要加这个属性 因为不加的话滑动一点点就会立即触发onReached函数，看不到菊花加载中
+          onEndReachedThreshold={0.1} // 这个属性的意思是 当滑动到距离列表内容底部不足 0.1*列表内容高度时触发onEndReached函数 为啥要加这个属性 因为不加的话滑动一点点就会立即触发onReached函数，看不到菊花加载中
         />
 
         <Portal>

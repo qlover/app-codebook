@@ -83,6 +83,10 @@ class UserLogin extends Container {
 
     login(username, password)
       .then((res) => {
+        if (!res.token && !res.void) {
+          console.log(res);
+          return Promise.reject("auth.token.fail");
+        }
         console.log("登录成功");
         const state = TokenService.setToken(res);
         navigation.replace("Main");

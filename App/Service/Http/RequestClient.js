@@ -14,14 +14,42 @@ export default class RequestClient {
     this.headers = {
       "Content-Type": "application/json;charset=UTF-8",
     };
+    this.interceptor = {
+      request: [],
+      response: [],
+    };
+
+    // 请求拦截
+    this.responseAfter((res: ByKey) => {
+      // 认证错误
+      if (40102 == res.code) {
+        new Toast().show({ message: res.error });
+        Container.screen.navigation().replace("Auth");
+        return Promise.reject(res.error);
+      } else if (res.error) {
+        // @TIP 抛出错误 key
+        return Promise.reject(res.error);
+      }
+      return res;
+    });
   }
 
+  /**
+   * 设置请求头
+   * @param {string} key 键
+   * @param {string} value 值
+   */
   setHeader(key: string, value: string): this {
     this.headers[key] = value;
     return this;
   }
 
-  parse(ion: RequestIon, params?: object): Promise<ByKey> {
+  /**
+   * 解析请求对象
+   * @param {RequestIon} ion
+   * @param {object|null} params
+   */
+  parse(ion: RequestIon, params?: object): Request {
     let url = API + ion.api;
     let init = {
       method: ion.method,
@@ -39,43 +67,69 @@ export default class RequestClient {
         init.body = JSON.stringify(params);
       }
     }
-    return { url, init };
+    return new Request(url, init);
+  }
+
+  /**
+   * 注册请求拦截
+   * @param {Function} onfulfilled
+   * @param {object|null} args
+   * @param {Function} onrejected
+   */
+  requestBefore(onfulfilled, args = null, onrejected = null) {
+    this.interceptor.request.unshift({ onfulfilled, onrejected, args });
+    return this;
+  }
+
+  /**
+   * 注册响应拦截
+   * @param {Function} onfulfilled
+   * @param {Function} onrejected
+   */
+  responseAfter(onfulfilled, onrejected = null) {
+    this.interceptor.response.unshift({ onfulfilled, onrejected });
+    return this;
+  }
+
+  /**
+   * 获取请求前的拦截 promise
+   * @param {any} params 参数
+   */
+  getRequestInterceptor(params): Promise<any> {
+    let promise = Promise.resolve(params);
+    this.interceptor.request.forEach((cept) => {
+      promise = promise.then(cept.onfulfilled, cept.onrejected);
+    });
+    return promise;
   }
 
   request(ion: RequestIon, params?: object) {
-    let promise = Promise.resolve(this.parse(ion, params));
+    const request = this.parse(ion, params);
+    let promise;
 
     // 请求拦截
-    promise = promise.then((input) => {
-      return input;
-    });
+    if (this.interceptor.request.length) {
+      // !!! 强制使用请求对象作为后面参数
+      promise = this.getRequestInterceptor(params).then((args) => request);
+    } else {
+      promise = Promise.resolve(request);
+    }
 
-    // 发送
+    // 发送请求
     promise = promise.then(RequestClient.send);
 
     // 响应拦截
-    promise = promise.then((res: ByKey) => {
-      // 认证错误
-      if (40102 == res.code) {
-        console.log(Container.screen.navigation());
-        new Toast().show({ message: res.error });
-        Container.screen.navigation().replace("Auth");
-        return Promise.reject(res.error);
-      } else if (res.error) {
-        // @TIP 抛出错误 key
-        return Promise.reject(res.error);
-      }
-      return res;
+    this.interceptor.response.forEach((cept) => {
+      promise = promise.then(cept.onfulfilled, cept.onrejected);
     });
 
-    // 返回响应
     return promise;
-    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败)
   }
 
-  static send({ url, init }): Promise<ByKey> {
+  static send(req: Request): Promise<ByKey> {
+    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败),fetch 暂时不支持超时设置
     // FIXME:当请求错误了不能停止当次请求
-    return fetch(new Request(url, init)).then(
+    return fetch(req).then(
       (res) => res.json(),
       (res) => Promise.reject("net.request.error")
     );
