@@ -4,6 +4,7 @@ export default class Popup {
   constructor() {}
 
   show(options) {
-    alert(options.message);
+    // alert(options.message);
+    console.log(options.message);
   }
 }

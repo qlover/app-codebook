@@ -68,18 +68,20 @@ export default class Home extends Container {
   }
 
   _onLoading(isRefreshing) {
+    console.log(this.state.isRefreshing, this.state.isLoading)
     if (isRefreshing) {
       // 刷新
       loadOver = false;
       this.setState({ isRefreshing });
+      console.log("refreshing..");
     } else {
       // 加载
       if (loadOver) {
         return 0;
       }
       this.setState({ isLoading: true });
+      console.log("loading..");
     }
-    console.log("loading..");
 
     this.incrementPage(isRefreshing);
 
@@ -95,7 +97,7 @@ export default class Home extends Container {
       })
       .catch((message) => {
         this.setState(state);
-        // new Toast().show({ message });
+        new Toast().show({ message });
       });
   }
 
@@ -179,9 +181,10 @@ export default class Home extends Container {
     return (
       <Provider>
         <FlatList
-          ListHeaderComponent={this.renderListHeader}
           data={this.state.dictlist}
           renderItem={this.renderDict}
+          keyExtractor={(item, index) => "" + index}
+          ListHeaderComponent={this.renderListHeader}
           refreshControl={
             <RefreshControl
               colors={["red"]} //此颜色无效
