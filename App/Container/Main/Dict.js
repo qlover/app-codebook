@@ -37,11 +37,10 @@ export class Dict extends Container {
     const promise = isUpdate
       ? this.service.updateDict(this.state.dict)
       : this.service.addDict(this.state.dict);
-    const { navigation } = this.props;
     return promise
       .then((res) => {
         console.log("保存成功");
-        navigation.pop();
+        this.navigation().pop();
       })
       .catch((err) => {
         console.log(err);

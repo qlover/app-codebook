@@ -73,13 +73,11 @@ class UserLogin extends Container {
   }
 
   onToRegister() {
-    const { navigation } = this.props;
-    navigation.replace("register");
+    this.navigation().replace("register");
   }
 
   onLogin() {
     const { username, password } = this.state;
-    const { navigation } = this.props;
 
     login(username, password)
       .then((res) => {
@@ -89,7 +87,7 @@ class UserLogin extends Container {
         }
         console.log("登录成功");
         const state = TokenService.setToken(res);
-        navigation.replace("Main");
+        this.navigation().replace("Main");
       })
       .catch((error) => {
         console.log(error);

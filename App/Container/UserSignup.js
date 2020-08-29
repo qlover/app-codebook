@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { signup } from "../Service/Http/UserLoginService";
 import Container from "./Container";
+import Toast from "../Service/Sys/Toast";
 
 export default class UserSignup extends Container {
   constructor(props) {
@@ -68,13 +69,12 @@ export default class UserSignup extends Container {
   }
 
   onToLogin() {
-    const { navigation } = this.props;
-    navigation.replace("login");
+    this.navigation().replace("login");
   }
 
   onRegister() {
     signup(this.state.username, this.state.password)
-      .then((res) => console.log("注册成功", res))
-      .catch((error) => console.log(error));
+      .then((res) => new Toast().show("注册成功"))
+      .catch((message) => new Toast().show({ message }));
   }
 }

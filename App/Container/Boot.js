@@ -8,18 +8,16 @@ class Boot extends Container {
   }
 
   componentDidMount() {
-    const { navigation } = this.props;
-
     // 查检登录状态
     const jwtToken = TokenService.getToken();
     if (!TokenService.check(jwtToken)) {
       setTimeout(() => {
-        navigation.replace("Auth");
+        this.navigation().replace("Auth");
       }, 4000);
       return;
     }
 
-    navigation.replace("Main");
+    this.navigation().replace("Main");
     // setTimeout(() => {
     //   navigation.replace("Main");
     // }, 4000);

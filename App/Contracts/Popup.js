@@ -5,6 +5,6 @@ export default class Popup {
 
   show(options) {
     // alert(options.message);
-    console.log(options.message);
+    console.log("[Toast]", options.message);
   }
 }

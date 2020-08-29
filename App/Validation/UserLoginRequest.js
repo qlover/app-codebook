@@ -15,11 +15,9 @@ export default class UserLoginRequest {
 
   static validation(args) {
     try {
-      new Validation(
-        args,
-        UserLoginRequest.rule,
-        UserLoginRequest.message
-      ).valida();
+      new Validation(UserLoginRequest.rule, UserLoginRequest.message).valida(
+        args
+      );
       return args;
     } catch (error) {
       return Promise.reject(error);

@@ -44,13 +44,12 @@ export class Rule {
 }
 
 export default class Validation {
-  constructor(values: object, rules: object, message = {}) {
-    this.values = values;
+  constructor(rules: object, message = {}) {
     this.rules = rules;
     this.message = message;
   }
 
-  valida() {
+  valida(values: object) {
     forOwn(this.rules, (rules, key) => {
       if (!rules) {
         return false;
@@ -64,7 +63,7 @@ export default class Validation {
           throw new TypeError("Invalid rule name: " + ruleName);
         }
 
-        if (!ruleMethod(this.values[key], rule.pop())) {
+        if (!ruleMethod(values[key], rule.pop())) {
           throw new TypeError(this.getMessage(key, ruleName));
         }
       });
