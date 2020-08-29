@@ -1,7 +1,8 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, ImageBackground } from "react-native";
 import TokenService from "../Service/Http/TokenService";
 import Container from "./Container";
+import { Button } from "react-native-paper";
 class Boot extends Container {
   constructor(props) {
     super(props);
@@ -10,14 +11,14 @@ class Boot extends Container {
   componentDidMount() {
     // 查检登录状态
     const jwtToken = TokenService.getToken();
-    if (!TokenService.check(jwtToken)) {
-      setTimeout(() => {
-        this.navigation().replace("Auth");
-      }, 4000);
-      return;
+    if (TokenService.check(jwtToken)) {
+      this.navigation().replace("Main");
+      // setTimeout(() => {
+      //   this.navigation().replace("Auth");
+      // }, 4000);
+      // return;
     }
 
-    this.navigation().replace("Main");
     // setTimeout(() => {
     //   navigation.replace("Main");
     // }, 4000);
@@ -25,11 +26,36 @@ class Boot extends Container {
 
   render() {
     return (
-      <View>
-        <Text style={{ textAlign: "center", backgroundColor: "red" }}>
-          启动页
-        </Text>
-      </View>
+      <ImageBackground
+        style={{ flex: 1, justifyContent: "flex-end" }}
+        source={require("../Source/container-boot.png")}
+      >
+        <View
+          style={{
+            bottom: 50,
+            paddingHorizontal: 40,
+            flexDirection: "row",
+            justifyContent: "space-around",
+          }}
+        >
+          <Button
+            onPress={() => this.navigation().navigate("Auth", { key: "login" })}
+            style={{ borderColor: "#eee", flex: 1, marginRight: 20 }}
+            mode="contained"
+          >
+            登录
+          </Button>
+          <Button
+            onPress={() =>
+              this.navigation().navigate("Auth", { key: "register" })
+            }
+            style={{ borderColor: "#eee", flex: 1, marginLeft: 20 }}
+            mode="outlined"
+          >
+            注册
+          </Button>
+        </View>
+      </ImageBackground>
     );
   }
 }

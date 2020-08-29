@@ -3,6 +3,10 @@
 export default class Popup {
   constructor() {}
 
+  showText(text) {
+    // alert(options.message);
+    console.log("[Toast]", text);
+  }
   show(options) {
     // alert(options.message);
     console.log("[Toast]", options.message);

@@ -10,7 +10,7 @@ import {
   Button,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/AntDesign";
-import { Provider, Portal, FAB } from "react-native-paper";
+import { Portal, FAB, Surface, Provider } from "react-native-paper";
 import { throttle } from "lodash";
 
 import DictService, {
@@ -23,7 +23,7 @@ import Toast from "../../Service/Sys/Toast";
 
 let page = {
   page: 1,
-  limit: 6,
+  limit: 10,
 };
 
 let loadOver = false;
@@ -168,18 +168,31 @@ export default class Home extends Container {
   };
 
   renderDict = ({ item, index, separators }) => (
-    <TouchableWithoutFeedback onPress={() => this.onDictClick(item)}>
-      <View style={{ margin: 10, borderWidth: 1, borderColor: "#0ff" }}>
-        <Text>id: {item.id}</Text>
-        <Text>title: {item.title}</Text>
-        <Text>website: {item.website}</Text>
-        <Text>username: {item.username}</Text>
-        <Text>password: {item.password}</Text>
-        <Text>phone: {item.phone}</Text>
-        <Text>email: {item.email}</Text>
+    <Surface style={{ margin: 10 }}>
+      <View
+        style={{
+          paddingVertical: 10,
+          paddingHorizontal: 15,
+          flexDirection: "row",
+        }}
+      >
+        <View style={{ width: 50 }}>
+          <Ionicons
+            onPress={() => this.onDictClick(item)}
+            size={50}
+            name="lock"
+          />
+        </View>
+        <View style={{ marginLeft: 10 }}>
+          <Text style={{ fontSize: 16 }}>
+            {item.id}.{item.title}
+          </Text>
+          <Text>username: {item.username}</Text>
+          <Text>password: {item.password}</Text>
+        </View>
 
         <Ionicons
-          // onPress={() => this.onDeleteDict([item.id])}
+          onPress={() => this.onDeleteDict([item.id])}
           style={{
             position: "absolute",
             right: 15,
@@ -190,7 +203,7 @@ export default class Home extends Container {
           name="delete"
         />
       </View>
-    </TouchableWithoutFeedback>
+    </Surface>
   );
 
   render() {
@@ -201,7 +214,7 @@ export default class Home extends Container {
           data={this.state.dictlist}
           renderItem={this.renderDict}
           keyExtractor={(item, index) => "" + index}
-          ListHeaderComponent={this.renderListHeader}
+          // ListHeaderComponent={this.renderListHeader}
           refreshControl={
             <RefreshControl
               colors={["red"]} //此颜色无效
