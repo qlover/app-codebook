@@ -1,5 +1,5 @@
 import TokenService from "./TokenService";
-import RequestClient from "./RequestClient";
+import RequestClient from "../../Lib/RequestClient";
 
 export default class BaseService extends RequestClient {
   constructor() {

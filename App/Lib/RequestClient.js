@@ -1,10 +1,10 @@
-import { API } from "../../Config/env";
+import { API } from "../Config/env";
 import { stringify } from "qs";
-import { RequestIon } from "../../Contracts/Types/Service";
+import { RequestIon } from "../Contracts/Types/Service";
 import { isObject, omitBy, isEmpty } from "lodash";
-import { ByKey } from "../../Contracts/RetJson";
-import Container from "../../Container/Container";
-import Toast from "../Sys/Toast";
+import { ByKey } from "../Contracts/RetJson";
+import Container from "../Container/Container";
+import Toast from "../Service/Sys/Toast";
 
 // null 和 undefined 一次性判断用 ==
 export const filterParams = (param) => "" === param || undefined == param;
@@ -20,7 +20,7 @@ export default class RequestClient {
     };
 
     // 请求拦截
-    this.responseAfter((res: ByKey) => {
+    this.after((res: ByKey) => {
       // 认证错误
       if (40102 == res.code) {
         new Toast().show({ message: res.error });
@@ -72,11 +72,14 @@ export default class RequestClient {
 
   /**
    * 注册请求拦截
+   *
+   * promise 参数默认接收 request 参数二
+   *
    * @param {Function} onfulfilled
    * @param {object|null} args
    * @param {Function} onrejected
    */
-  requestBefore(onfulfilled, args = null, onrejected = null) {
+  before(onfulfilled, args = null, onrejected = null) {
     this.interceptor.request.unshift({ onfulfilled, onrejected, args });
     return this;
   }
@@ -86,7 +89,7 @@ export default class RequestClient {
    * @param {Function} onfulfilled
    * @param {Function} onrejected
    */
-  responseAfter(onfulfilled, onrejected = null) {
+  after(onfulfilled, onrejected = null) {
     this.interceptor.response.unshift({ onfulfilled, onrejected });
     return this;
   }

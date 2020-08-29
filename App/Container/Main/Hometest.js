@@ -41,6 +41,19 @@ export default class Home extends Container {
     this.onLoading = throttle(this._onLoading, 1500);
   }
 
+  /**
+   *
+   * 解决以下问题
+   * ```
+   * Warning: Can't perform a React state update on an unmounted component.
+   * This is a no-op, but it indicates a memory leak in your application.
+   * To fix, cancel all subscriptions and asynchronous tasks in the componentWillUnmount method.
+   * ```
+   */
+  componentWillUnmount() {
+    this.setState = () => false;
+  }
+
   componentDidMount() {
     this._onLoading(true);
   }
@@ -60,8 +73,7 @@ export default class Home extends Container {
   }
 
   onDictClick(params: DictEntity = _DictEntity) {
-    const { navigation } = this.props;
-    navigation.navigate({
+    this.navigation().navigate({
       name: "DcitInfo",
       params,
     });
@@ -72,7 +84,11 @@ export default class Home extends Container {
     if (isRefreshing) {
       // 刷新
       loadOver = false;
-      console.log("refreshing..", this.state.isRefreshing, this.state.isLoading);
+      console.log(
+        "refreshing..",
+        this.state.isRefreshing,
+        this.state.isLoading
+      );
       this.setState({ isRefreshing });
     } else {
       // 加载
@@ -103,9 +119,8 @@ export default class Home extends Container {
   }
 
   onLogout() {
-    const { navigation } = this.props;
     TokenService.invaldToken();
-    navigation.reset({
+    this.navigation().reset({
       routes: [{ name: "Auth" }],
     });
   }
