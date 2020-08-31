@@ -1,7 +1,7 @@
 import { API } from "../Config/env";
 import { stringify } from "qs";
-import { RequestIon } from "../Contracts/Types/Service";
-import { isObject, omitBy, isEmpty } from "lodash";
+import { RequestIon, RequestOptions } from "../Contracts/Types/Service";
+import { isObject, omitBy, isEmpty, pick } from "lodash";
 import { ByKey } from "../Contracts/RetJson";
 import Container from "../Container/Container";
 import Toast from "../Service/Sys/Toast";
@@ -9,17 +9,31 @@ import Toast from "../Service/Sys/Toast";
 // null 和 undefined 一次性判断用 ==
 export const filterParams = (param) => "" === param || undefined == param;
 
-export default class RequestClient {
-  constructor() {
-    this.headers = {
-      "Content-Type": "application/json;charset=UTF-8",
-    };
-    this.interceptor = {
-      request: [],
-      response: [],
-    };
+export const _RequestOptions: RequestOptions = {
+  headers: {
+    "Content-Type": "application/json;charset=UTF-8",
+  },
+  mode: "cors",
+  delay: 10,
+  timeout: 8000,
+  interceptor: {
+    request: [],
+    response: [],
+  },
+};
 
-    // 请求拦截
+export class Queue {}
+
+/**
+ * - timeout polyfill
+ * @see https://github.com/robinpowered/react-native-fetch-polyfill/blob/master/fetch-polyfill.js
+ *
+ */
+export default class RequestClient {
+  constructor(options: RequestOptions) {
+    this.options = { ..._RequestOptions, ...options };
+
+    // 绑定一个默认的 请求拦截
     this.after((res: ByKey) => {
       // 认证错误
       if (40102 == res.code) {
@@ -40,7 +54,7 @@ export default class RequestClient {
    * @param {string} value 值
    */
   setHeader(key: string, value: string): this {
-    this.headers[key] = value;
+    this.options.headers[key] = value;
     return this;
   }
 
@@ -50,12 +64,9 @@ export default class RequestClient {
    * @param {object|null} params
    */
   parse(ion: RequestIon, params?: object): Request {
+    let init = pick(this.options, "mode", "headers", "timeout");
     let url = API + ion.api;
-    let init = {
-      method: ion.method,
-      headers: this.headers,
-      mode: "cors",
-    };
+    init.method = ion.method;
 
     if (!isEmpty(params) && isObject(params)) {
       // GET 和 HEAD 方法没有主体
@@ -67,7 +78,7 @@ export default class RequestClient {
         init.body = JSON.stringify(params);
       }
     }
-    return new Request(url, init);
+    return { url, init };
   }
 
   /**
@@ -80,7 +91,7 @@ export default class RequestClient {
    * @param {Function} onrejected
    */
   before(onfulfilled, args = null, onrejected = null) {
-    this.interceptor.request.unshift({ onfulfilled, onrejected, args });
+    this.options.interceptor.request.unshift({ onfulfilled, onrejected, args });
     return this;
   }
 
@@ -90,7 +101,7 @@ export default class RequestClient {
    * @param {Function} onrejected
    */
   after(onfulfilled, onrejected = null) {
-    this.interceptor.response.unshift({ onfulfilled, onrejected });
+    this.options.interceptor.response.unshift({ onfulfilled, onrejected });
     return this;
   }
 
@@ -100,41 +111,82 @@ export default class RequestClient {
    */
   getRequestInterceptor(params): Promise<any> {
     let promise = Promise.resolve(params);
-    this.interceptor.request.forEach((cept) => {
+    this.options.interceptor.request.forEach((cept) => {
       promise = promise.then(cept.onfulfilled, cept.onrejected);
     });
     return promise;
   }
 
   request(ion: RequestIon, params?: object) {
-    const request = this.parse(ion, params);
+    const input = this.parse(ion, params);
+
     let promise;
 
     // 请求拦截
-    if (this.interceptor.request.length) {
+    if (this.options.interceptor.request.length) {
       // !!! 强制使用请求对象作为后面参数
-      promise = this.getRequestInterceptor(params).then((args) => request);
+      promise = this.getRequestInterceptor(params).then((args) => input);
     } else {
-      promise = Promise.resolve(request);
+      promise = Promise.resolve(input);
     }
 
     // 发送请求
     promise = promise.then(RequestClient.send);
 
     // 响应拦截
-    this.interceptor.response.forEach((cept) => {
+    this.options.interceptor.response.forEach((cept) => {
       promise = promise.then(cept.onfulfilled, cept.onrejected);
     });
 
     return promise;
   }
 
-  static send(req: Request): Promise<ByKey> {
-    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败),fetch 暂时不支持超时设置
-    // FIXME:当请求错误了不能停止当次请求
-    return fetch(req).then(
+  /**
+   * @deprecated
+   * @param {*}
+   */
+  static __send({ url, init }) {
+    /**
+     * 使用 polyfill 设置超时和中止
+     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/FetchController
+     */
+    return fetch(url, init).then(
       (res) => res.json(),
       (res) => Promise.reject("net.request.error")
     );
+  }
+
+  static send({ url, init }) {
+    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败),fetch 暂时不支持超时设置
+    // FIXME:当请求错误了不能停止当次请求
+    const Signal = new AbortController();
+    init.signal = Signal.signal;
+    return Promise.race([
+      RequestClient.timeoutPromise(init.timeout),
+      fetch(url, init),
+    ]).then(
+      (res) => {
+        // 响应超时
+        if (504 === res.status) {
+          Signal.abort();
+          return Promise.reject("net.request.timeout");
+        }
+        return res.json();
+      },
+      (res) => {
+        Signal.abort();
+        return Promise.reject("net.request.error");
+      }
+    );
+  }
+
+  static timeoutPromise(timeout) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(
+          new Response("timeout", { status: 504, statusText: "timeout" })
+        );
+      }, timeout);
+    });
   }
 }

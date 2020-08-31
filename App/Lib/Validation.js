@@ -1,7 +1,7 @@
 import { isEmpty, forOwn, isFunction, isNumber } from "lodash";
 
 const message = {
-  password: "The field is reuired!",
+  password: "The field is password!",
   required: "The field is reuired!",
   number: "The field is number!",
   length: "The field is not long enough!",
@@ -12,8 +12,13 @@ export class Rule {
     return !isEmpty(value);
   }
 
-  static password(value): boolean {
-    return /^.*(?=.{6,})(?=.*\d)(?=.*[a-z])|(?=.*[A-Z]).*$/.test(value);
+  /**
+   * 密码最少6位，包括至少1个小写字母，1个数字
+   *
+   * @param {string} value
+   */
+  static password(value: string): boolean {
+    return Rule.regexp(value, /^.*(?=.{6,})(?=.*\d)(?=.*[a-z])|(?=.*[A-Z]).*$/);
   }
 
   /**
@@ -41,7 +46,29 @@ export class Rule {
     }
     return false;
   }
+
+  static min(value, min): boolean {
+    return value >= min;
+  }
+
+  static max(value, min): boolean {
+    return value <= min;
+  }
+
+  static in(value, seq): boolean {
+    return seq.split(",").includes(value);
+  }
+
+  static email(value): boolean {
+    return Rule.regexp(value, /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/);
+  }
+
+  static regexp(value, reg): boolean {
+    return reg.test(value);
+  }
 }
+
+export class ValidationException extends TypeError {}
 
 export default class Validation {
   constructor(rules: object, message = {}) {
@@ -49,30 +76,51 @@ export default class Validation {
     this.message = message;
   }
 
-  valida(values: object) {
-    forOwn(this.rules, (rules, key) => {
-      if (!rules) {
-        return false;
+  /**
+   * 返回 rules
+   *
+   * @throws ValidationException
+   * @param {object} values 验证的值
+   */
+  validated(values: object) {
+    return forOwn(this.rules, (rules, key) => {
+      if (rules) {
+        rules = rules.split("|");
+
+        // 必填选项
+        if (rules.includes("required") && !values[key]) {
+          throw new ValidationException(this.getMessage(key, "required"));
+        }
+
+        rules.forEach((rule) => {
+          if (!Validation.validaRule(values[key], rule)) {
+            const [name] = rule.split(":");
+            throw new ValidationException(this.getMessage(key, name));
+          }
+        });
       }
-      rules.split("|").forEach((rule) => {
-        rule = rule.split(":");
-        const ruleName = rule.shift();
-        let ruleMethod;
-
-        if (!(ruleMethod = Rule[ruleName]) || !isFunction(ruleMethod)) {
-          throw new TypeError("Invalid rule name: " + ruleName);
-        }
-
-        if (!ruleMethod(values[key], rule.pop())) {
-          throw new TypeError(this.getMessage(key, ruleName));
-        }
-      });
     });
-    return true;
+  }
+
+  /**
+   *
+   * @throws ValidationException
+   * @param {string} value
+   * @param {string} rule length:5,10 min:
+   */
+  static validaRule(value: string, rule: string): boolean {
+    const [name, fix] = rule.split(":");
+    const ruleMethod = Rule[name];
+
+    if (ruleMethod && isFunction(ruleMethod)) {
+      return ruleMethod(value, fix);
+    }
+
+    throw new ValidationException(`Invalid rule name: ${name}`);
   }
 
   getMessage(key, ruleName): string {
-    const megKey = `${key}.${ruleName}`;
-    return this.message[megKey] ? this.message[megKey] : message[ruleName];
+    key = `${key}.${ruleName}`;
+    return this.message[key] ? this.message[key] : message[ruleName];
   }
 }

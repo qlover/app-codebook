@@ -1,4 +1,4 @@
-import Validation from "../Lib/Validation";
+import Validation, { ValidationException } from "../Lib/Validation";
 
 export default class UserLoginRequest {
   static rule = {
@@ -13,14 +13,18 @@ export default class UserLoginRequest {
     "password.password": "密码最少6位，包括至少1个小写字母，1个数字",
   };
 
-  static validation(args) {
+  static validation(args): Promise<any> {
     try {
-      new Validation(UserLoginRequest.rule, UserLoginRequest.message).valida(
+      new Validation(UserLoginRequest.rule, UserLoginRequest.message).validated(
         args
       );
       return args;
-    } catch (error) {
-      return Promise.reject(error);
+    } catch (e) {
+      if (e instanceof ValidationException) {
+        return Promise.reject(e);
+      } else {
+        return Promise.reject(e);
+      }
     }
   }
 }

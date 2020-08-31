@@ -12,6 +12,7 @@ export class UserSignup extends Container {
     super(props);
 
     this.state = {
+      loading: false,
       username: "qlover",
       password: "qwer123",
     };
@@ -23,13 +24,19 @@ export class UserSignup extends Container {
 
   onRegister() {
     const { username, password } = this.state;
+    this.setState({ loading: true });
+
     signup(username, password)
       .then((res) => {
         this.props.remember({ username, password });
+        this.setState({ loading: false });
         new Toast().showText("注册成功");
         this.navigation().replace("login");
       })
-      .catch((message) => new Toast().show({ message }));
+      .catch((message) => {
+        this.setState({ loading: false });
+        new Toast().show({ message });
+      });
   }
 
   render() {
@@ -64,6 +71,7 @@ export class UserSignup extends Container {
             }}
           />
           <Button
+            loading={this.state.loading}
             mode="contained"
             style={{ marginVertical: 10 }}
             onPress={() => this.onRegister()}

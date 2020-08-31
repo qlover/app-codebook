@@ -6,11 +6,16 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  TouchableWithoutFeedback,
-  Button,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/AntDesign";
-import { Portal, FAB, Surface, Provider } from "react-native-paper";
+import {
+  Button,
+  Portal,
+  FAB,
+  Surface,
+  Provider,
+  Dialog,
+} from "react-native-paper";
 import { throttle } from "lodash";
 
 import DictService, {
@@ -27,12 +32,14 @@ let page = {
 };
 
 let loadOver = false;
+let dict;
 
 export default class Home extends Container {
   constructor(props) {
     super(props);
     this.service = new DictService();
     this.state = {
+      visible: false,
       isLoading: false,
       isRefreshing: false,
       dictlist: [],
@@ -72,32 +79,51 @@ export default class Home extends Container {
     return (page.page = rest ? 1 : page.page + Math.max(0, inc));
   }
 
-  onDictClick(params: DictEntity = _DictEntity) {
+  onPressDict(params: DictEntity = _DictEntity) {
     this.navigation().navigate({
       name: "DcitInfo",
       params,
     });
   }
 
+  onPressDeleteDict(params: DictEntity) {
+    dict = params;
+    this.onToggleDialog(true);
+  }
+
+  onToggleDialog(visible = false) {
+    this.setState({ visible });
+  }
+
+  _onDeleteDict() {
+    this.setState({ isRefreshing: true });
+    const state = { isRefreshing: false, visible: false };
+    this.service
+      .deleteDict([dict.id])
+      .then((res) => {
+        const dictlist = this.state.dictlist.filter(
+          (_dict) => _dict.id !== dict.id
+        );
+        this.setState({ ...state, dictlist });
+        new Toast().showText("删除成功");
+      })
+      .catch((err) => {
+        this.setState(state);
+        new Toast().showText(err);
+      });
+  }
+
   _onLoading(isRefreshing) {
-    // console.log(this.state.isRefreshing, this.state.isLoading)
     if (isRefreshing) {
       // 刷新
       loadOver = false;
-      console.log(
-        "refreshing..",
-        this.state.isRefreshing,
-        this.state.isLoading
-      );
       this.setState({ isRefreshing });
     } else {
       // 加载
       if (loadOver) {
         return 0;
       }
-      console.log("loading..", this.state.isRefreshing, this.state.isLoading);
       this.setState({ isLoading: true });
-      // console.log("loading..");
     }
 
     const state = { isRefreshing: false, isLoading: false };
@@ -151,18 +177,28 @@ export default class Home extends Container {
 
   renderListHeader = () => {
     return (
-      <View>
-        <TouchableWithoutFeedback>
-          <View style={{ marginVertical: 10 }}>
-            <Button title="添加" onPress={() => this.onDictClick()} />
-          </View>
-        </TouchableWithoutFeedback>
-
-        <TouchableWithoutFeedback>
-          <View style={{ marginVertical: 10 }}>
-            <Button title="退出" onPress={() => this.onLogout()} />
-          </View>
-        </TouchableWithoutFeedback>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          paddingHorizontal: 10,
+          marginVertical: 5,
+        }}
+      >
+        <Button
+          style={{ borderColor: "#eee", flex: 1, marginRight: 20 }}
+          mode="contained"
+          onPress={() => this.onPressDict()}
+        >
+          添加
+        </Button>
+        <Button
+          style={{ borderColor: "#eee", flex: 1, marginLeft: 20 }}
+          mode="contained"
+          onPress={() => this.onLogout()}
+        >
+          退出
+        </Button>
       </View>
     );
   };
@@ -178,7 +214,7 @@ export default class Home extends Container {
       >
         <View style={{ width: 50 }}>
           <Ionicons
-            onPress={() => this.onDictClick(item)}
+            onPress={() => this.onPressDict(item)}
             size={50}
             name="lock"
           />
@@ -192,7 +228,7 @@ export default class Home extends Container {
         </View>
 
         <Ionicons
-          onPress={() => this.onDeleteDict([item.id])}
+          onPress={() => this.onPressDeleteDict(item)}
           style={{
             position: "absolute",
             right: 15,
@@ -214,7 +250,7 @@ export default class Home extends Container {
           data={this.state.dictlist}
           renderItem={this.renderDict}
           keyExtractor={(item, index) => "" + index}
-          // ListHeaderComponent={this.renderListHeader}
+          ListHeaderComponent={this.renderListHeader}
           refreshControl={
             <RefreshControl
               colors={["red"]} //此颜色无效
@@ -235,8 +271,23 @@ export default class Home extends Container {
           <FAB
             icon="plus"
             style={styles.fab}
-            onPress={() => this.onDictClick()}
+            onPress={() => this.onPressDict()}
           />
+
+          <Dialog
+            visible={this.state.visible}
+            onDismiss={() => this.onToggleDialog()}
+          >
+            <Dialog.Content>
+              <Text>确定是否删除？</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button color="red" onPress={() => this._onDeleteDict()}>
+                确定
+              </Button>
+              <Button onPress={() => this.onToggleDialog()}>取消</Button>
+            </Dialog.Actions>
+          </Dialog>
         </Portal>
       </Provider>
     );
@@ -244,31 +295,6 @@ export default class Home extends Container {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: "#F5FCFF",
-  },
-  item: {
-    backgroundColor: "#168",
-    height: 200,
-    marginRight: 15,
-    marginLeft: 15,
-    marginBottom: 15,
-    alignItems: "center",
-    //justifyContetnt:'center',
-  },
-  text: {
-    color: "white",
-    fontSize: 20,
-  },
-  indicatorContainer: {
-    alignItems: "center",
-  },
-  indicator: {
-    color: "red",
-    margin: 10,
-  },
   fab: {
     position: "absolute",
     right: 25,

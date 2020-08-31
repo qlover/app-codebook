@@ -112,6 +112,7 @@ class UserLogin extends Container {
             </View>
           </View>
           <Button
+            loading={this.state.loading}
             mode="contained"
             style={{ marginVertical: 10 }}
             onPress={() => this.onLogin()}
