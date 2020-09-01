@@ -28,5 +28,4 @@ export type RequestOptions = {
   headers: object,
   delay: number,
   timeout: number,
-  interceptor?: RequestInterceptorType,
 };

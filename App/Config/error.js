@@ -2,6 +2,7 @@ export const dict = {
   // network
   "net.none": "连接你的网络",
   "net.request.timeout": "请求超时",
+  "net.request.toomany": "请求频繁，请稍后重试",
   "net.request.error": "网络错误",
   "net.request.fail": "请求失败",
   OK: "请求成功",

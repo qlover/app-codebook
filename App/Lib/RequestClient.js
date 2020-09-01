@@ -9,6 +9,20 @@ import Toast from "../Service/Sys/Toast";
 // null 和 undefined 一次性判断用 ==
 export const filterParams = (param) => "" === param || undefined == param;
 
+let Signal: AbortController;
+
+const defaultResponseFulfilled = (res) => {
+  if (408 === res.status || 504 === res.status) {
+    Signal && Signal.abort();
+    return Promise.reject("net.request.timeout");
+  }
+  return res.json();
+};
+const defaultResponseRejected = (res) => {
+  Signal && Signal.abort();
+  return Promise.reject("net.request.error");
+};
+
 // 默认的 响应拦截
 const defaultResponseIntercept = (res: ByKey) => {
   // 认证错误
@@ -37,19 +51,8 @@ export const _RequestOptions: RequestOptions = {
   },
   mode: "cors",
   delay: 10,
-  timeout: 8000,
-  interceptor: {
-    request: [],
-    response: [
-      {
-        onfulfilled: defaultResponseIntercept,
-        onrejected: null,
-      },
-    ],
-  },
+  timeout: 5000,
 };
-
-export class Queue {}
 
 /**
  * - timeout polyfill
@@ -59,6 +62,15 @@ export class Queue {}
 export default class RequestClient {
   constructor(options: RequestOptions) {
     this.options = { ..._RequestOptions, ...options };
+    this.interceptor = {
+      request: [],
+      response: [],
+    };
+
+    // 拦截超时响应
+    this.after(defaultResponseFulfilled, defaultResponseRejected);
+    // 拦截成功响应后的 json
+    this.after(defaultResponseIntercept);
   }
 
   /**
@@ -81,7 +93,7 @@ export default class RequestClient {
    * @param {Function} onrejected
    */
   before(onfulfilled, args = {}, onrejected = null) {
-    this.options.interceptor.request.unshift({ onfulfilled, onrejected, args });
+    this.interceptor.request.unshift({ onfulfilled, onrejected, args });
     return this;
   }
 
@@ -91,7 +103,7 @@ export default class RequestClient {
    * @param {Function} onrejected
    */
   after(onfulfilled, onrejected = null) {
-    this.options.interceptor.response.unshift({ onfulfilled, onrejected });
+    this.interceptor.response.unshift({ onfulfilled, onrejected });
     return this;
   }
 
@@ -101,7 +113,7 @@ export default class RequestClient {
    */
   getRequestInterceptor(params): Promise<any> {
     let promise = Promise.resolve(params);
-    this.options.interceptor.request.forEach((cept) => {
+    this.interceptor.request.forEach((cept) => {
       promise = promise.then(cept.onfulfilled, cept.onrejected);
     });
     return promise;
@@ -137,7 +149,7 @@ export default class RequestClient {
     const input = this.parse(ion, params);
 
     // 请求拦截
-    if (this.options.interceptor.request.length) {
+    if (this.interceptor.request.length) {
       // !!! 强制使用请求对象作为后面参数
       promise = this.getRequestInterceptor(params).then((args) => input);
     } else {
@@ -148,7 +160,7 @@ export default class RequestClient {
     promise = promise.then(RequestClient.send);
 
     // 响应拦截
-    this.options.interceptor.response.forEach((cept) => {
+    this.interceptor.response.forEach((cept) => {
       promise = promise.then(cept.onfulfilled, cept.onrejected);
     });
 
@@ -173,21 +185,9 @@ export default class RequestClient {
   }
 
   static send({ url, init }) {
-    const Signal = new AbortController();
+    // -FIXME 手动使用 AbortControler 中止
+    Signal = new AbortController();
     init.signal = Signal.signal;
-    return Promise.race([timeoutPromise(init.timeout), fetch(url, init)]).then(
-      (res) => {
-        // 响应超时
-        if (504 === res.status) {
-          Signal.abort();
-          return Promise.reject("net.request.timeout");
-        }
-        return res.json();
-      },
-      (res) => {
-        Signal.abort();
-        return Promise.reject("net.request.error");
-      }
-    );
+    return Promise.race([timeoutPromise(init.timeout), fetch(url, init)]);
   }
 }
