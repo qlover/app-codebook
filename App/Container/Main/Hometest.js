@@ -7,7 +7,6 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/AntDesign";
 import {
   Button,
   Portal,
@@ -16,13 +15,14 @@ import {
   Provider,
   Dialog,
 } from "react-native-paper";
+import Ionicons from "react-native-vector-icons/AntDesign";
 import { throttle } from "lodash";
 
 import DictService, {
   DictEntity,
   _DictEntity,
 } from "../../Service/Http/DictService";
-import TokenService from "../../Service/Http/TokenService";
+import TokenService from "../../Service/Local/TokenService";
 import Container from "../Container";
 import Toast from "../../Service/Sys/Toast";
 
@@ -62,6 +62,10 @@ export default class Home extends Container {
   }
 
   componentDidMount() {
+    this.focusListener = this.navigation().addListener("didFocus", (e) => {
+      console.log("didfocus", e);
+    });
+
     this._onLoading(true);
   }
 
@@ -243,7 +247,6 @@ export default class Home extends Container {
   );
 
   render() {
-    console.log("render");
     return (
       <Provider>
         <FlatList

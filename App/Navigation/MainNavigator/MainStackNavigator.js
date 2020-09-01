@@ -6,7 +6,7 @@ import { Dict } from "../../Container/Main/Dict";
 
 const Stack = createStackNavigator();
 
-export default function LaunchStackNavigator() {
+export default function MainStackNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home" component={Home} />

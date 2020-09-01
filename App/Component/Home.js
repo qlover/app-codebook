@@ -13,7 +13,7 @@ import { Portal, FAB, Provider } from "react-native-paper";
 
 import { Sort, Paginate } from "../../Contracts/Types/Service";
 import DictService, { DictEntity } from "../../Service/Http/DictService";
-import TokenService from "../../Service/Http/TokenService";
+import TokenService from "../Service/Local/TokenService";
 import Container from "../Container";
 
 class Home extends Container {

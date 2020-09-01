@@ -9,6 +9,28 @@ import Toast from "../Service/Sys/Toast";
 // null 和 undefined 一次性判断用 ==
 export const filterParams = (param) => "" === param || undefined == param;
 
+// 默认的 响应拦截
+const defaultResponseIntercept = (res: ByKey) => {
+  // 认证错误
+  if (40102 == res.code) {
+    new Toast().show({ message: res.error });
+    Container.screen.navigation().replace("Auth");
+    return Promise.reject(res.error);
+  } else if (res.error) {
+    // @TIP 抛出错误 key
+    return Promise.reject(res.error);
+  }
+  return res;
+};
+
+const timeoutPromise = (timeout) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(new Response("timeout", { status: 504, statusText: "timeout" }));
+    }, timeout);
+  });
+};
+
 export const _RequestOptions: RequestOptions = {
   headers: {
     "Content-Type": "application/json;charset=UTF-8",
@@ -18,7 +40,12 @@ export const _RequestOptions: RequestOptions = {
   timeout: 8000,
   interceptor: {
     request: [],
-    response: [],
+    response: [
+      {
+        onfulfilled: defaultResponseIntercept,
+        onrejected: null,
+      },
+    ],
   },
 };
 
@@ -32,20 +59,6 @@ export class Queue {}
 export default class RequestClient {
   constructor(options: RequestOptions) {
     this.options = { ..._RequestOptions, ...options };
-
-    // 绑定一个默认的 请求拦截
-    this.after((res: ByKey) => {
-      // 认证错误
-      if (40102 == res.code) {
-        new Toast().show({ message: res.error });
-        Container.screen.navigation().replace("Auth");
-        return Promise.reject(res.error);
-      } else if (res.error) {
-        // @TIP 抛出错误 key
-        return Promise.reject(res.error);
-      }
-      return res;
-    });
   }
 
   /**
@@ -59,38 +72,15 @@ export default class RequestClient {
   }
 
   /**
-   * 解析请求对象
-   * @param {RequestIon} ion
-   * @param {object|null} params
-   */
-  parse(ion: RequestIon, params?: object): Request {
-    let init = pick(this.options, "mode", "headers", "timeout");
-    let url = API + ion.api;
-    init.method = ion.method;
-
-    if (!isEmpty(params) && isObject(params)) {
-      // GET 和 HEAD 方法没有主体
-      if ("GET" == ion.method || "HEAD" == ion.method) {
-        const querystring = stringify(params);
-        url = [url, querystring].join("?");
-      } else if ((params = omitBy(params, filterParams))) {
-        // 去掉为空的值, '' 和 null,其余可以有主体
-        init.body = JSON.stringify(params);
-      }
-    }
-    return { url, init };
-  }
-
-  /**
    * 注册请求拦截
    *
    * promise 参数默认接收 request 参数二
    *
    * @param {Function} onfulfilled
-   * @param {object|null} args
+   * @param {object} args
    * @param {Function} onrejected
    */
-  before(onfulfilled, args = null, onrejected = null) {
+  before(onfulfilled, args = {}, onrejected = null) {
     this.options.interceptor.request.unshift({ onfulfilled, onrejected, args });
     return this;
   }
@@ -117,10 +107,34 @@ export default class RequestClient {
     return promise;
   }
 
-  request(ion: RequestIon, params?: object) {
-    const input = this.parse(ion, params);
+  /**
+   * 解析请求参数
+   *
+   * @param {RequestIon} ion
+   * @param {object|null} params
+   * @returns {object} {url, init}
+   */
+  parse(ion: RequestIon, params?: object): Request {
+    let init = pick(this.options, "mode", "headers", "timeout");
+    let url = API + ion.api;
+    init.method = ion.method;
 
+    if (!isEmpty(params) && isObject(params)) {
+      // GET 和 HEAD 方法没有主体
+      if ("GET" == ion.method || "HEAD" == ion.method) {
+        const querystring = stringify(params);
+        url = [url, querystring].join("?");
+      } else if ((params = omitBy(params, filterParams))) {
+        // 去掉为空的值, '' 和 null,其余可以有主体
+        init.body = JSON.stringify(params);
+      }
+    }
+    return { url, init };
+  }
+
+  request(ion: RequestIon, params?: object) {
     let promise;
+    const input = this.parse(ion, params);
 
     // 请求拦截
     if (this.options.interceptor.request.length) {
@@ -146,6 +160,8 @@ export default class RequestClient {
    * @param {*}
    */
   static __send({ url, init }) {
+    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败),fetch 暂时不支持超时设置
+    // FIXME:当请求错误了不能停止当次请求
     /**
      * 使用 polyfill 设置超时和中止
      * @see https://developer.mozilla.org/zh-CN/docs/Web/API/FetchController
@@ -157,14 +173,9 @@ export default class RequestClient {
   }
 
   static send({ url, init }) {
-    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败),fetch 暂时不支持超时设置
-    // FIXME:当请求错误了不能停止当次请求
     const Signal = new AbortController();
     init.signal = Signal.signal;
-    return Promise.race([
-      RequestClient.timeoutPromise(init.timeout),
-      fetch(url, init),
-    ]).then(
+    return Promise.race([timeoutPromise(init.timeout), fetch(url, init)]).then(
       (res) => {
         // 响应超时
         if (504 === res.status) {
@@ -178,15 +189,5 @@ export default class RequestClient {
         return Promise.reject("net.request.error");
       }
     );
-  }
-
-  static timeoutPromise(timeout) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(
-          new Response("timeout", { status: 504, statusText: "timeout" })
-        );
-      }, timeout);
-    });
   }
 }
