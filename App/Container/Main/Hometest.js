@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  RefreshControl,
-  ActivityIndicator,
-} from "react-native";
+import { StyleSheet, View, Text, FlatList, RefreshControl } from "react-native";
 import {
   Button,
   Portal,
@@ -14,6 +7,7 @@ import {
   Surface,
   Provider,
   Dialog,
+  ActivityIndicator,
 } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/AntDesign";
 import { throttle } from "lodash";

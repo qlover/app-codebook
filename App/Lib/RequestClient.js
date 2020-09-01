@@ -167,24 +167,8 @@ export default class RequestClient {
     return promise;
   }
 
-  /**
-   * @deprecated
-   * @param {*}
-   */
-  static __send({ url, init }) {
-    // TODO: 当发生 net.request.error 应该取消掉当次请求(可能是超时，可能是请求发送已经失败),fetch 暂时不支持超时设置
-    // FIXME:当请求错误了不能停止当次请求
-    /**
-     * 使用 polyfill 设置超时和中止
-     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/FetchController
-     */
-    return fetch(url, init).then(
-      (res) => res.json(),
-      (res) => Promise.reject("net.request.error")
-    );
-  }
-
   static send({ url, init }) {
+    console.info(`[info][http send] ${url}`);
     // -FIXME 手动使用 AbortControler 中止
     Signal = new AbortController();
     init.signal = Signal.signal;

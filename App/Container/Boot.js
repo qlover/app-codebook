@@ -1,27 +1,10 @@
 import React from "react";
 import { Text, View, ImageBackground } from "react-native";
-import TokenService from "../Service/Local/TokenService";
 import Container from "./Container";
 import { Button } from "react-native-paper";
 class Boot extends Container {
   constructor(props) {
     super(props);
-  }
-
-  componentDidMount() {
-    // 查检登录状态
-    const jwtToken = TokenService.getToken();
-    if (TokenService.check(jwtToken)) {
-      this.navigation().replace("Main");
-      // setTimeout(() => {
-      //   this.navigation().replace("Auth");
-      // }, 4000);
-      // return;
-    }
-
-    // setTimeout(() => {
-    //   navigation.replace("Main");
-    // }, 4000);
   }
 
   render() {
