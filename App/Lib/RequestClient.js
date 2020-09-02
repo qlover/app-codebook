@@ -20,7 +20,7 @@ const defaultResponseFulfilled = (res) => {
 };
 const defaultResponseRejected = (res) => {
   Signal && Signal.abort();
-  return Promise.reject("net.request.error");
+  return Promise.reject(res);
 };
 
 // 默认的 响应拦截

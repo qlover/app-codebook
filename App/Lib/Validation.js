@@ -13,6 +13,21 @@ export class Rule {
   }
 
   /**
+   *
+   * @param {string} value 值
+   * @param {string} fix 可以是 , 逗号分隔名
+   * @param {object} values 原始所有值
+   */
+  static required_without(value, fix, values): boolean {
+    return (
+      fix
+        .split(",")
+        .filter((field) => values[field])
+        .join(",") === fix
+    );
+  }
+
+  /**
    * 密码最少6位，包括至少1个小写字母，1个数字
    *
    * @param {string} value
@@ -59,12 +74,23 @@ export class Rule {
     return seq.split(",").includes(value);
   }
 
+  static regexp(value, reg): boolean {
+    return reg.test(value);
+  }
+
   static email(value): boolean {
     return Rule.regexp(value, /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/);
   }
 
-  static regexp(value, reg): boolean {
-    return reg.test(value);
+  static phone(value): boolean {
+    return Rule.regexp(value, /^[1]([3-9])[0-9]{9}$/);
+  }
+
+  static domain(value): boolean {
+    return Rule.regexp(
+      value,
+      /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/
+    );
   }
 }
 
@@ -91,13 +117,14 @@ export default class Validation {
         if (rules.includes("required") && !values[key]) {
           throw new ValidationException(this.getMessage(key, "required"));
         }
-
-        rules.forEach((rule) => {
-          if (!Validation.validaRule(values[key], rule)) {
-            const [name] = rule.split(":");
-            throw new ValidationException(this.getMessage(key, name));
-          }
-        });
+        if (values[key]) {
+          rules.forEach((rule) => {
+            if (!Validation.validaRule(values[key], rule, values)) {
+              const [name] = rule.split(":");
+              throw new ValidationException(this.getMessage(key, name));
+            }
+          });
+        }
       }
     });
   }
@@ -107,13 +134,14 @@ export default class Validation {
    * @throws ValidationException
    * @param {string} value
    * @param {string} rule length:5,10 min:
+   * @param {object} values 原始所有参数
    */
-  static validaRule(value: string, rule: string): boolean {
+  static validaRule(value: string, rule: string, values?: object): boolean {
     const [name, fix] = rule.split(":");
     const ruleMethod = Rule[name];
 
     if (ruleMethod && isFunction(ruleMethod)) {
-      return ruleMethod(value, fix);
+      return ruleMethod(value, fix, values);
     }
 
     throw new ValidationException(`Invalid rule name: ${name}`);

@@ -54,7 +54,7 @@ export class UserSignup extends Container {
         <View style={{ flex: 3, padding: 20, margin: 20 }}>
           <TextInput
             mode="outlined"
-            style={{ height: 45 }}
+            dense={true}
             value={this.state.username}
             placeholder="请输入用户名"
             onChangeText={(username) => {
@@ -63,7 +63,7 @@ export class UserSignup extends Container {
           />
           <TextInput
             mode="outlined"
-            style={{ height: 45 }}
+            dense={true}
             value={this.state.password}
             placeholder="请输入密码"
             onChangeText={(password) => {

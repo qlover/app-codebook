@@ -71,7 +71,7 @@ class UserLogin extends Container {
           <TextInput
             mode="outlined"
             clearButtonMode="never"
-            style={{ height: 45 }}
+            dense={true}
             value={this.state.username}
             placeholder="请输入用户名"
             onChangeText={(username) => {
@@ -81,7 +81,7 @@ class UserLogin extends Container {
           <TextInput
             mode="outlined"
             secureTextEntry={true}
-            style={{ height: 45 }}
+            dense={true}
             value={this.state.password}
             placeholder="请输入密码"
             onChangeText={(password) => {

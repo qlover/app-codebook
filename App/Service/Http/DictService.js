@@ -7,7 +7,8 @@ import {
   API_DICTS_DELTE,
 } from "../../Config/api";
 import { Paginate, Sort } from "../../Contracts/Types/Service";
-import BaseService from "./BaseService";
+import ApiService from "./ApiService";
+import DictSaveRequest from "../../Validation/DictSaveRequest";
 
 /** Interface and Types */
 export interface DictEntity {
@@ -49,29 +50,33 @@ export interface RetAddDict extends Message {
 export interface RetUpdateDict extends Message {}
 
 /** Class */
-export default class DictService extends BaseService {
+export default class DictService extends ApiService {
   constructor() {
     super();
   }
 
   getList(paginate: Paginate, sort: Sort): Promise<RetGetList> {
-    return this.request(API_DICTS_GET, { ...paginate, ...sort });
+    return this.api().request(API_DICTS_GET, { ...paginate, ...sort });
   }
 
   getDict(id: number): Promise<RetGetDict> {
-    return this.request(API_DICT_GET, { id });
+    return this.api().request(API_DICT_GET, { id });
   }
 
   deleteDict(id: number[]): Promise<RetDeleteDict> {
-    return this.request(API_DICTS_DELTE, { id: id.join(",") });
+    return this.api().request(API_DICTS_DELTE, { id: id.join(",") });
   }
 
   addDict(dict: DictEntity): Promise<RetAddDict> {
-    return this.request(API_DICTS_ADD, dict);
+    return this.api()
+      .before(DictSaveRequest.validation)
+      .request(API_DICTS_ADD, dict);
   }
 
   updateDict(dict: DictEntity): Promise<RetUpdateDict> {
-    return this.request(API_DICTS_UPDATE, dict);
+    return this.api()
+      .before(DictSaveRequest.validation)
+      .request(API_DICTS_UPDATE, dict);
   }
 }
 

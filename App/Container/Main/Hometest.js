@@ -276,7 +276,7 @@ export default class Home extends Container {
             onDismiss={() => this.onToggleDialog()}
           >
             <Dialog.Content>
-              <Text>确定是否删除？</Text>
+              <Text style={{ fontSize: 18 }}>确定是否删除？</Text>
             </Dialog.Content>
             <Dialog.Actions>
               <Button color="red" onPress={() => this._onDeleteDict()}>

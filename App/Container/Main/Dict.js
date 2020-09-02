@@ -1,17 +1,12 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  TouchableWithoutFeedback,
-  StyleSheet,
-} from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { connect } from "react-redux";
 import { Dict as DictPlaceholder } from "../../Config/Lang";
 import { keys, pick } from "lodash";
 import DictService, { _DictEntity } from "../../Service/Http/DictService";
 import Container from "../Container";
+import Toast from "../../Service/Sys/Toast";
+import { TextInput, Button } from "react-native-paper";
 
 /**
  * 是保存还是修改
@@ -29,32 +24,39 @@ export class Dict extends Container {
     isUpdate = route.params && route.params.id && route.params.id > 0;
     const dict = isUpdate ? route.params : _DictEntity;
 
-    this.state = { dict };
+    this.state = { dict, isSaving: false };
     this.service = new DictService();
   }
 
   onSaveDict() {
+    if (this.state.isSaving) {
+      new Toast().show({ message: "点击频繁" });
+      return;
+    }
+    this.setState({ isSaving: true });
     const promise = isUpdate
       ? this.service.updateDict(this.state.dict)
       : this.service.addDict(this.state.dict);
     return promise
       .then((res) => {
-        console.log("保存成功");
         this.navigation().pop();
+        new Toast().show({ message: "保存成功" });
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((message) => {
+        this.setState({ isSaving: false });
+        new Toast().show({ message });
       });
   }
 
   renderDictInput() {
     return keys(pick(this.state.dict, Object.keys(_DictEntity))).map((_key) => (
       <TextInput
+        mode="outlined"
+        dense={true}
         placeholder={
           DictPlaceholder[_key] ? DictPlaceholder[_key] : "请输入文本"
         }
         key={_key}
-        style={styles.input}
         value={this.state.dict[_key]}
         onChangeText={(text) => {
           this.setState({ dict: { ...this.state.dict, [_key]: text } });
@@ -67,11 +69,14 @@ export class Dict extends Container {
     return (
       <View style={{ padding: 20 }}>
         {this.renderDictInput()}
-        <TouchableWithoutFeedback>
-          <View style={{ marginVertical: 10 }}>
-            <Button title="保 存" onPress={() => this.onSaveDict()} />
-          </View>
-        </TouchableWithoutFeedback>
+        <Button
+          loading={this.state.isSaving}
+          style={{ marginTop: 20 }}
+          mode="contained"
+          onPress={() => this.onSaveDict()}
+        >
+          保存
+        </Button>
       </View>
     );
   }
