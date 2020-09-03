@@ -229,14 +229,7 @@ export default class Home extends Container {
 
         <Ionicons
           onPress={() => this.onPressDeleteDict(item)}
-          style={{
-            position: "absolute",
-            zIndex: 2,
-            right: 15,
-            top: 15,
-            color: "#0ee",
-            fontSize: 20,
-          }}
+          style={styles.delIcon}
           name="delete"
         />
       </View>
@@ -296,8 +289,17 @@ export default class Home extends Container {
 
 const styles = StyleSheet.create({
   fab: {
+    backgroundColor: Colors.pink200,
     position: "absolute",
     right: 25,
     bottom: 50,
+  },
+  delIcon: {
+    position: "absolute",
+    zIndex: 2,
+    right: 15,
+    top: 15,
+    color: Colors.pink200,
+    fontSize: 20,
   },
 });
