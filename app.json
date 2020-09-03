@@ -15,6 +15,10 @@
     },
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover"
+    }
   }
 }
