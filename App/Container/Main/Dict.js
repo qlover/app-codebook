@@ -53,6 +53,7 @@ export class Dict extends Container {
       <TextInput
         mode="outlined"
         dense={true}
+        keyboardType="url"
         placeholder={
           DictPlaceholder[_key] ? DictPlaceholder[_key] : "请输入文本"
         }

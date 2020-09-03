@@ -3,4 +3,6 @@ export const guid = (g = 10): string =>
 
 export const unionKey = (key?: string) => Symbol(key ? key : guid(5));
 
-export const diffTimestamp = (t1, t2) => (t1 - t2);
+export const diffTimestamp = (t1, t2) => t1 - t2;
+
+export const trimAll = (str) => str.replace(" ", "");

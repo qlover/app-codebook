@@ -8,6 +8,7 @@ import {
   Provider,
   Dialog,
   ActivityIndicator,
+  Colors,
 } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/AntDesign";
 import { throttle } from "lodash";
@@ -39,7 +40,7 @@ export default class Home extends Container {
       dictlist: [],
     };
 
-    this.onLoading = throttle(this._onLoading, 1500);
+    this._onLoading = throttle(this.__onLoading, 1500);
   }
 
   /**
@@ -60,7 +61,7 @@ export default class Home extends Container {
       console.log("didfocus", e);
     });
 
-    this._onLoading(true);
+    this.__onLoading(true);
   }
 
   changeStatus(isLoading = false, isRefreshing = false) {
@@ -111,7 +112,7 @@ export default class Home extends Container {
       });
   }
 
-  _onLoading(isRefreshing) {
+  __onLoading(isRefreshing) {
     if (isRefreshing) {
       // 刷新
       loadOver = false;
@@ -208,6 +209,7 @@ export default class Home extends Container {
           paddingVertical: 10,
           paddingHorizontal: 15,
           flexDirection: "row",
+          zIndex: 1,
         }}
       >
         <View style={{ width: 50 }}>
@@ -229,6 +231,7 @@ export default class Home extends Container {
           onPress={() => this.onPressDeleteDict(item)}
           style={{
             position: "absolute",
+            zIndex: 2,
             right: 15,
             top: 15,
             color: "#0ee",
@@ -250,17 +253,17 @@ export default class Home extends Container {
           ListHeaderComponent={this.renderListHeader}
           refreshControl={
             <RefreshControl
-              colors={["red"]} //此颜色无效
+              colors={[Colors.deepPurpleA400, Colors.purpleA400]}
               tintColor={"orange"}
               titleColor={"red"} //只有ios有效
               refreshing={this.state.isRefreshing}
               onRefresh={() => {
-                this.onLoading(true);
+                this._onLoading(true);
               }}
             />
           }
           ListFooterComponent={() => this.renderPullLoading()} //上拉加载更多视图
-          onEndReached={() => this.onLoading()} // TODO:待解决滑动频繁调用 loading
+          onEndReached={() => this._onLoading()} // TODO:待解决滑动频繁调用 loading
           onEndReachedThreshold={0.1} // 这个属性的意思是 当滑动到距离列表内容底部不足 0.1*列表内容高度时触发onEndReached函数 为啥要加这个属性 因为不加的话滑动一点点就会立即触发onReached函数，看不到菊花加载中
         />
 

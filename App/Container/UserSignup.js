@@ -3,15 +3,17 @@ import { Text, View, ImageBackground, Image } from "react-native";
 import { signup } from "../Service/Http/UserLoginService";
 import Container from "./Container";
 import Toast from "../Service/Sys/Toast";
-import { Button, TextInput } from "react-native-paper";
+import { Button, TextInput, IconButton, Colors } from "react-native-paper";
 import { createAction } from "../Redux/AuthRedux";
 import { connect } from "react-redux";
+import { trimAll } from "../Lib/Utils";
 
 export class UserSignup extends Container {
   constructor(props) {
     super(props);
 
     this.state = {
+      isSecureTextEntry: true,
       loading: false,
       username: "qlover",
       password: "qwer123",
@@ -22,7 +24,11 @@ export class UserSignup extends Container {
     this.navigation().replace("login");
   }
 
-  onRegister() {
+  onToggleSecureEntry() {
+    this.setState({ isSecureTextEntry: !this.state.isSecureTextEntry });
+  }
+
+  _onRegister() {
     const { username, password } = this.state;
     this.setState({ loading: true });
 
@@ -52,29 +58,47 @@ export class UserSignup extends Container {
         </View>
 
         <View style={{ flex: 3, padding: 20, margin: 20 }}>
-          <TextInput
+        <TextInput
             mode="outlined"
             dense={true}
             value={this.state.username}
             placeholder="请输入用户名"
             onChangeText={(username) => {
-              this.setState({ username });
+              this.setState({ username: trimAll(username) });
             }}
           />
-          <TextInput
-            mode="outlined"
-            dense={true}
-            value={this.state.password}
-            placeholder="请输入密码"
-            onChangeText={(password) => {
-              this.setState({ password });
-            }}
-          />
+          <View style={{ position: "relative", justifyContent: "center" }}>
+            <TextInput
+              style={{ zIndex: 1 }}
+              mode="outlined"
+              secureTextEntry={this.state.isSecureTextEntry}
+              dense={true}
+              value={this.state.password}
+              placeholder="请输入密码"
+              maxLength={32}
+              onChangeText={(password) => {
+                this.setState({ password: trimAll(password) });
+              }}
+            />
+            <IconButton
+              style={{
+                position: "absolute",
+                right: 0,
+                zIndex: 2,
+                bottom: 0,
+                backgroundColor: "#eee",
+              }}
+              icon={this.state.isSecureTextEntry ? "eye-off" : "eye"}
+              color={Colors.deepPurple800}
+              size={20}
+              onPress={() => this.onToggleSecureEntry()}
+            />
+          </View>
           <Button
             loading={this.state.loading}
             mode="contained"
             style={{ marginVertical: 10 }}
-            onPress={() => this.onRegister()}
+            onPress={() => this._onRegister()}
             labelStyle={{ fontSize: 16 }}
           >
             注 册

@@ -92,6 +92,14 @@ export class Rule {
       /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/
     );
   }
+
+  /**
+   * 3-20位字母,数字,汉字,下划线
+   * @param {*} value
+   */
+  static uname(value): boolean {
+    return Rule.regexp(value, /^([a-zA-Z0-9_\u4e00-\u9fa5]{3,20})$/);
+  }
 }
 
 export class ValidationException extends TypeError {}

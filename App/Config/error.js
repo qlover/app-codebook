@@ -5,6 +5,7 @@ export const dict = {
   "net.request.toomany": "请求频繁，请稍后重试",
   "net.request.error": "网络错误",
   "net.request.fail": "请求失败",
+  "net.response.notjson": "服务器响应失败",
   OK: "请求成功",
   created: "创建成功",
 

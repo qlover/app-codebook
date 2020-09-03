@@ -1,10 +1,7 @@
 import { API } from "../Config/env";
 import { stringify } from "qs";
 import { RequestIon, RequestOptions } from "../Contracts/Types/Service";
-import { isObject, omitBy, isEmpty, pick } from "lodash";
-import { ByKey } from "../Contracts/RetJson";
-import Container from "../Container/Container";
-import Toast from "../Service/Sys/Toast";
+import { isObject, omitBy, isEmpty, pick, identity } from "lodash";
 
 // null 和 undefined 一次性判断用 ==
 export const filterParams = (param) => "" === param || undefined == param;
@@ -12,29 +9,23 @@ export const filterParams = (param) => "" === param || undefined == param;
 let Signal: AbortController;
 
 const defaultResponseFulfilled = (res) => {
-  if (408 === res.status || 504 === res.status) {
-    Signal && Signal.abort();
-    return Promise.reject("net.request.timeout");
+  const { status } = res;
+  if (200 !== status) {
+    if (408 === status || 504 === status) {
+      Signal && Signal.abort();
+      return Promise.reject("net.request.timeout");
+    }
+    return Promise.reject("net.request.error");
   }
-  return res.json();
+
+  // 成功后响应为 JSON
+  return res
+    .json()
+    .then(identity, (err) => Promise.reject("net.response.notjson"));
 };
 const defaultResponseRejected = (res) => {
   Signal && Signal.abort();
   return Promise.reject(res);
-};
-
-// 默认的 响应拦截
-const defaultResponseIntercept = (res: ByKey) => {
-  // 认证错误
-  if (40102 == res.code) {
-    new Toast().show({ message: res.error });
-    Container.screen.navigation().replace("Auth");
-    return Promise.reject(res.error);
-  } else if (res.error) {
-    // @TIP 抛出错误 key
-    return Promise.reject(res.error);
-  }
-  return res;
 };
 
 const timeoutPromise = (timeout) => {
@@ -69,8 +60,6 @@ export default class RequestClient {
 
     // 拦截超时响应
     this.after(defaultResponseFulfilled, defaultResponseRejected);
-    // 拦截成功响应后的 json
-    this.after(defaultResponseIntercept);
   }
 
   /**
@@ -103,7 +92,7 @@ export default class RequestClient {
    * @param {Function} onrejected
    */
   after(onfulfilled, onrejected = null) {
-    this.interceptor.response.unshift({ onfulfilled, onrejected });
+    this.interceptor.response.push({ onfulfilled, onrejected });
     return this;
   }
 
